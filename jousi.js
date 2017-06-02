@@ -1,8 +1,14 @@
+/*
+* Jousi.js version 1.0
+*
+* More indepth documentation is comming soon.
+*/
+
 let styleExists = false;
 let styledElements = [];
 let classes = [];
 let ids = [];
- 
+
 const Create = (ObjectOfTags = {}, ArrayOfProperties) => {
   this.elements = [];
   this.newElements = [];
@@ -32,67 +38,68 @@ const Create = (ObjectOfTags = {}, ArrayOfProperties) => {
   }
   // Creates defined elements
   function render (object){
-    for(key in object){
-      let parentName = object[key].elName;
-      let parentObject;
-      if(parentName.includes("c:")){
-        let className = parentName.substr(parentName.indexOf(":") + 1);
-        parentObject = document.getElementsByClassName(`${className}`);
-      }
-      else if(parentName.includes("d:")){
-        let idName = parentName.substr(parentName.indexOf(":") + 1);
-        parentObject = document.querySelectorAll(`#${idName}`);
-      }
-      else {
-        parentObject = document.querySelectorAll(`${parentName}`);
-      }
-      let children = object[key].children;
-      for(let child = 0; child < children.length; child++ ){
-    
-        if(children[child].includes("-c:")){
-          // Get class name from array element
-          let className = children[child].substr(children[child].indexOf(":") + 1);
-          let getElement = children[child].replace(`-c:${className}`, "");
-          // Push class to array of Classes
-          this.newElements.push(getElement);
-    
-          if(className.includes(" ")){
-            let classesArray = className.split(" ");
-            [...classesArray].map(className => classes.push(className));
-          }
-          else {
-            classes.push(className)
-          }
-          
-          
-          [...parentObject].map(parent => {
-            let childElement = document.createElement(`${getElement}`);
-            childElement.className = className;
-            parent.appendChild(childElement)
-          })
-        }
-        else if(children[child].includes("-d:")){
-          // Get ID from array element
-          let idName = children[child].substr(children[child].indexOf(":") + 1);
-          let getElement = children[child].replace(`-d:${idName}`, "");
-          this.newElements.push(getElement);
-          // Push id to array of IDs
-          ids.push(idName);
-          let childElement = document.createElement(`${getElement}`);
-          childElement.id = idName;
-          [...parentObject].map(parent => parent.appendChild(childElement))
-        }
-        else {
-          let element = children[child];
-          this.newElements.push(element);
-          [...parentObject].map(parent => {
-            let childElement = document.createElement(`${element}`);
-            parent.appendChild(childElement)
-          })
-        }
-      }
-    }
-  }
+   for(key in object){
+     let parentName = object[key].elName;
+     let parentObject;
+     if(parentName.includes("c:")){
+       let className = parentName.substr(parentName.indexOf(":") + 1);
+       parentObject = document.getElementsByClassName(`${className}`);
+     }
+     else if(parentName.includes("d:")){
+       let idName = parentName.substr(parentName.indexOf(":") + 1);
+       parentObject = document.querySelectorAll(`#${idName}`);
+     }
+     else {
+       parentObject = document.querySelectorAll(`${parentName}`);
+     }
+     let children = object[key].children;
+     for(let child = 0; child < children.length; child++ ){
+  
+       if(children[child].includes("-c:")){
+         // Get class name from array element
+         let className = children[child].substr(children[child].indexOf(":") + 1);
+         let getElement = children[child].replace(`-c:${className}`, "");
+         // Push class to array of Classes
+         this.newElements.push(getElement);
+  
+         if(className.includes(" ")){
+           let classesArray = className.split(" ");
+           [...classesArray].map(className => classes.push(className));
+         }
+         else {
+           classes.push(className)
+         }
+        
+        
+         [...parentObject].map(parent => {
+           let childElement = document.createElement(`${getElement}`);
+           childElement.className = className;
+           parent.appendChild(childElement)
+         })
+       }
+       else if(children[child].includes("-d:")){
+         // Get ID from array element
+         let idName = children[child].substr(children[child].indexOf(":") + 1);
+         let getElement = children[child].replace(`-d:${idName}`, "");
+         this.newElements.push(getElement);
+         // Push id to array of IDs
+         ids.push(idName);
+         let childElement = document.createElement(`${getElement}`);
+         childElement.id = idName;
+         [...parentObject].map(parent => parent.appendChild(childElement))
+       }
+       else {
+         let element = children[child];
+         this.newElements.push(element);
+         [...parentObject].map(parent => {
+           let childElement = document.createElement(`${element}`);
+           parent.appendChild(childElement)
+         })
+       }
+     }
+   }
+ }
+
   function checkArray(array, value){
     for(let i = 0; i < array.length; i++){
       if(array[i] == value || array[i] == value.toUpperCase()){
@@ -120,7 +127,11 @@ const Create = (ObjectOfTags = {}, ArrayOfProperties) => {
       let exists = true;
       let animate = false;
       // Get the current element in DOM
-      if(checkArray(this.htmlTags, keyNames[j])){
+      
+      if(keyNames[j] == "animate"){
+        animate = true;
+      }
+      else if(checkArray(this.htmlTags, keyNames[j])){
         getElement = document.querySelector(`${keyNames[j]}`);
       }
       else if(checkArray(ids, keyNames[j])){
@@ -133,11 +144,18 @@ const Create = (ObjectOfTags = {}, ArrayOfProperties) => {
       // If you want to choose a perticular element by class name
       else if(keyNames[j].includes(":")){
         let index=  keyNames[j].substr(0, keyNames[j].indexOf(':'));
-        let className = keyNames[j].substr(keyNames[j].indexOf(":") + 1);
-        getElement = document.getElementsByClassName(`${className}`)[index-1];
-      }
-      else if(keyNames[j] == "animate"){
-        animate = true;
+        let name = keyNames[j].substr(keyNames[j].indexOf(":") + 1);
+
+        // Check if "name" is a class, if not, the its a tag name
+        if(checkArray(classes, name)){
+          getElement = document.getElementsByClassName(`${name}`)[index-1];
+        }
+        else if(checkArray(this.htmlTags, name)){
+          getElement = document.getElementsByTagName(`${name}`)[index-1];
+        }
+        else {
+          throw `: The element ${name} is either not defined or ID of an element. Please reserve IDs only for individual elements`
+        }
       }
       else{
         isClass = true;
@@ -160,31 +178,54 @@ const Create = (ObjectOfTags = {}, ArrayOfProperties) => {
       for(property in properties) {
         let styleTag = document.querySelector("style");
         if (animate){
-          // let animationArray = [];
-          // let animationLines = [];
-          // if(property == "name"){
-          //   this.animationName = properties[property]
-          // }
-          // else if (property == "logic"){
-          //   for(style in properties[property]){
-          //     for(let i = 0; i < this.animationExtensions.length; i++){
-          //       let line;
-          //       for(key in properties[property][style]){
-          //         line = `${style}:{${this.animationExtensions[i]}${key}:${properties[property][style][key]};}`
-          //         animationArray.push(line)
-          //       }
-          //     }
-          //   }
-          //   for(let k = 0; k < animationArray.length; k++) {
-          //     let fullLine = `@${this.animationExtensions[k]}keyframes ${this.animationName} {${ animationArray[k]}}`
-          //     animationLines.push(fullLine)
-          //   }
+          let animationArray = [];
+          let animationLines = [];
+          let keysLength;
+          let op = [];
+          let moz = [];
+          let webkit = [];
+          let none = [];
+          if(property == "name"){
+            this.animationName = properties[property]
+          }
+          else if (property == "logic"){
+            keysLength = Object.keys(properties[property]).length;
+            for(let k = 0; k < this.animationExtensions.length; k++){
+              for(style in properties[property]){
+                for(key in properties[property][style]){
+                  let line = `${style}{${this.animationExtensions[k]}${key}:${properties[property][style][key]};}`
+                  animationArray.push(line)
+                }
+              }
+            }
+            // Get first, second, and last n elements and input them into full line
+            for(let k = 0; k < animationArray.length; k++){
+              if(k < keysLength){
+                op.push(animationArray[k])
+              }
+              else if(k > Number(keysLength)-1 && k < Number(keysLength) * 2){
+                moz.push(animationArray[k])
+              }
+              else if(k > (Number(keysLength)-1)*2 && k < Number(keysLength) * 3){
+                webkit.push(animationArray[k])
+              }
+              else {
+                none.push(animationArray[k])
+              }
+            }
 
-            
-          //   // let stylingBegins = `.${ClassName}${property}{ ${getAllStyles} }`;
-          //   //       styleTag.insertAdjacentHTML('afterbegin', stylingBegins);
-          //   //       this.styleName = `.${ClassName}`
-          // }
+            animationLines.push(op)
+            animationLines.push(moz)
+            animationLines.push(webkit)
+            animationLines.push(none)
+
+            for(let l = 0; l < animationLines.length; l++){
+              let line = animationLines[l].join("");
+
+              let fullLine = `@${this.animationExtensions[l]}keyframes ${animationName} {${line}}`
+              styleTag.insertAdjacentHTML('afterbegin', fullLine);
+            }
+          }
         }
         else if(exists){
           let tag;
@@ -194,8 +235,6 @@ const Create = (ObjectOfTags = {}, ArrayOfProperties) => {
             ClassName = keyNames[j];
           }
           else {
-            console.log(getElement)
-            console.log(getElement.tagName)
             tag = getElement.tagName;
             ClassName = getElement.classList[0];
           }
@@ -426,8 +465,9 @@ const Create = (ObjectOfTags = {}, ArrayOfProperties) => {
   }
 }
  
- 
- 
- 
+
+const ReCreate = () => {
+
+}
  
  
