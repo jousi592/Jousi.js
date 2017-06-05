@@ -2,6 +2,8 @@
 * Jousi.js version 1.0
 *
 * More indepth documentation is comming soon.
+*
+* Created by Josef Reischig
 */
 
 let styleExists = false;
